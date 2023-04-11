@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 import java.util.Scanner;
-
+// initial commit
 public class GroceryManagementSystem {
     private ArrayList<String> menu;
 

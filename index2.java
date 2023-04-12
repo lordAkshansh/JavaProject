@@ -1,5 +1,5 @@
 import java.util.Scanner;
-
+// Added code to this repo 
 public class GroceryManagementSystem {
     private static Scanner scanner = new Scanner(System.in);
     private static int inventoryCount = 0;

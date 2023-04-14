@@ -88,6 +88,7 @@ public class GroceryManagementSystem {
         try (Scanner scanner = new Scanner(new File(INVENTORY_FILE_NAME))) {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
+                scanner.nextLine();
                 String[] parts = line.split(",");
                 if (parts.length == 2) {
                     String itemName = parts[0].trim();

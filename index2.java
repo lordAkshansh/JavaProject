@@ -1,141 +1,110 @@
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
 
 public class GroceryManagementSystem {
-    private static Scanner scanner = new Scanner(System.in);
-    private static int inventoryCount = 0;
-    private static int MAX_INVENTORY = 100;
-    private static GroceryItem[] inventory = new GroceryItem[MAX_INVENTORY];
-    
+
+    private static final String INVENTORY_FILE_NAME = "inventory.txt";
+    private static Map<String, Integer> inventory;
+
     public static void main(String[] args) {
-        int choice;
+        inventory = new HashMap<>();
+        readInventoryFromFile();
+
+        Scanner scanner = new Scanner(System.in);
+        int option = 0;
         do {
-            System.out.println("\nGrocery Management System\n");
+            System.out.println("Grocery Management System");
+            System.out.println("-------------------------");
             System.out.println("1. Add item to inventory");
-            System.out.println("2. Display inventory");
-            System.out.println("3. Search for an item");
-            System.out.println("4. Remove an item");
-            System.out.println("5. Exit");
-            
-            System.out.print("\nEnter your choice: ");
-            choice = scanner.nextInt();
-            
-            switch(choice) {
+            System.out.println("2. Remove item from inventory");
+            System.out.println("3. Display inventory");
+            System.out.println("4. Exit");
+
+            System.out.print("Enter option: ");
+            option = scanner.nextInt();
+
+            switch (option) {
                 case 1:
-                    addItem();
+                    addItemToInventory(scanner);
                     break;
                 case 2:
-                    displayInventory();
+                    removeItemFromInventory(scanner);
                     break;
                 case 3:
-                    searchItem();
+                    displayInventory();
                     break;
                 case 4:
-                    removeItem();
-                    break;
-                case 5:
-                    System.out.println("\nExiting the program...");
+                    System.out.println("Exiting system...");
                     break;
                 default:
-                    System.out.println("\nInvalid choice. Please try again.");
+                    System.out.println("Invalid option selected");
+                    break;
             }
-        } while(choice != 5);
-    }
-    
-    private static void addItem() {
-        if(inventoryCount < MAX_INVENTORY) {
-            scanner.nextLine();
-            System.out.print("\nEnter item name: ");
-            String itemName = scanner.nextLine();
-            
-            System.out.print("\nEnter item price: ");
-            double price = scanner.nextDouble();
-            
-            System.out.print("\nEnter item quantity: ");
-            int quantity = scanner.nextInt();
-            
-            inventory[inventoryCount++] = new GroceryItem(itemName, price, quantity);
-            System.out.println("\nItem added successfully!");
-        } else {
-            System.out.println("\nInventory is full. Cannot add more items.");
-        }
-    }
-    
-    private static void displayInventory() {
-        if(inventoryCount == 0) {
-            System.out.println("\nInventory is empty.");
-        } else {
-            System.out.println("\nInventory:");
-            System.out.printf("%-20s%-10s%-10s\n", "Item Name", "Price", "Quantity");
-            for(int i=0; i<inventoryCount; i++) {
-                System.out.printf("%-20s%-10.2f%-10d\n", inventory[i].getName(), inventory[i].getPrice(), inventory[i].getQuantity());
-            }
-        }
-    }
-    
-    private static void searchItem() {
-        scanner.nextLine();
-        System.out.print("\nEnter item name to search: ");
-        String itemName = scanner.nextLine();
-        
-        boolean found = false;
-        for(int i=0; i<inventoryCount; i++) {
-            if(inventory[i].getName().equalsIgnoreCase(itemName)) {
-                System.out.printf("%-20s%-10s%-10s\n", "Item Name", "Price", "Quantity");
-                System.out.printf("%-20s%-10.2f%-10d\n", inventory[i].getName(), inventory[i].getPrice(), inventory[i].getQuantity());
-                found = true;
-                break;
-            }
-        }
-        
-        if(!found) {
-            System.out.println("\nItem not found in inventory.");
-        }
-    }
-    
-    private static void removeItem() {
-        scanner.nextLine();
-        System.out.print("\nEnter item name to remove: ");
-        String itemName = scanner.nextLine();
-        
-        boolean found = false;
-        for(int i=0; i<inventoryCount; i++) {
-            if(inventory[i].getName().equalsIgnoreCase(itemName)) {
-                for(int j=i; j<inventoryCount-1; j++) {
-                    inventory[j] = inventory[j+1];
-                }
-                inventoryCount--;
-                System.out.println("\nItem removed successfully!");
-                found = true;
-                break;
-            }
-        }
-        
-        if(!found) {
-            System.out.println("\nItem not found in inventory.");
-        }
-    }
-}
+        } while (option != 4);
 
-class GroceryItem {
-    private String name;
-    private double price;
-    private int quantity;
-    
-    public GroceryItem(String name, double price, int quantity) {
-        this.name = name;
-        this.price = price;
-        this.quantity = quantity;
+        saveInventoryToFile();
     }
-    
-    public String getName() {
-        return name;
+
+    private static void addItemToInventory(Scanner scanner) {
+        System.out.print("Enter item name: ");
+        String itemName = scanner.next();
+        System.out.print("Enter item quantity: ");
+        int quantity = scanner.nextInt();
+        if (inventory.containsKey(itemName)) {
+            int currentQuantity = inventory.get(itemName);
+            inventory.put(itemName, currentQuantity + quantity);
+        } else {
+            inventory.put(itemName, quantity);
+        }
+        System.out.println("Item added to inventory");
     }
-    
-    public double getPrice() {
-        return price;
+
+    private static void removeItemFromInventory(Scanner scanner) {
+        System.out.print("Enter item name: ");
+        String itemName = scanner.next();
+        if (inventory.containsKey(itemName)) {
+            int currentQuantity = inventory.get(itemName);
+            System.out.print("Enter item quantity to remove: ");
+            int quantity = scanner.nextInt();
+            if (currentQuantity >= quantity) {
+                inventory.put(itemName, currentQuantity - quantity);
+                System.out.println("Item removed from inventory");
+            } else {
+                System.out.println("Error: Insufficient stock for item " + itemName);
+            }
+        } else {
+            System.out.println("Error: Item " + itemName + " not found in inventory");
+        }
     }
-    
-    public int getQuantity() {
-        return quantity;
+
+    private static void displayInventory() {
+        System.out.println("Inventory:");
+        for (Map.Entry<String, Integer> entry : inventory.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
     }
-}
+
+    private static void readInventoryFromFile() {
+        try (Scanner scanner = new Scanner(new File(INVENTORY_FILE_NAME))) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(",");
+                if (parts.length == 2) {
+                    String itemName = parts[0].trim();
+                    int quantity = Integer.parseInt(parts[1].trim());
+                    inventory.put(itemName, quantity);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Inventory file not found, creating new inventory...");
+        }
+    }
+
+    private static void saveInventoryToFile() {
+        try (PrintWriter writer = new PrintWriter(new File(INVENTORY_FILE_NAME))) {
+            for (Map.Entry<String, Integer> entry : inventory.entrySet()) {
+                writer.println(entry.getKey() + ", " + entry.getValue());
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Error saving inventory to file: " + e.getMessage());
+        }}}
